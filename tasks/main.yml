@@ -1,0 +1,23 @@
+---
+# tasks file for molecule_test
+
+- name: Gather OS info
+  ansible.builtin.setup:
+    filter: ansible_os_family
+
+- name: Include vars for {{ ansible_facts['os_family'] }} OS family
+  ansible.builtin.include_vars:
+    file: "{{ ansible_facts['os_family'] }}.yml"
+
+- name: Install {{ molecule_test_httpd_package }} package
+  ansible.builtin.package:
+    name: "{{ molecule_test_httpd_package }}"
+    state: present
+  notify: restart_webserver
+
+- name: Copy content
+  ansible.builtin.copy:
+    content: "{{ molecule_test_webpage_content }}"
+    dest: "{{ molecule_test_httpd_dir }}/index.html"
+    mode: '0644'
+  notify: restart_webserver
